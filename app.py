@@ -27,6 +27,7 @@ SECRET_TOKEN = 'ye993our_s123ecre747489t_to948949ken'
 def github_webhook():
     # Verify the request signature
     signature = request.headers.get('X-Hub-Signature')
+    print(signature)
     if signature is None:
         abort(400, 'Missing X-Hub-Signature header')
 
@@ -41,7 +42,7 @@ def github_webhook():
 
     # Process the GitHub event
     payload = request.json
-    if payload['ref'] == 'refs/heads/master':
+    if payload['ref'] == 'refs/heads/main':
         # Implement your logic here for handling the push event
         print('Received push to master branch')
 
