@@ -1,25 +1,13 @@
 from flask import Flask, jsonify, request, abort
 from flask_restful import Api, Resource
-from flask_swagger_ui import get_swaggerui_blueprint
 import hmac
 import hashlib
-import subprocess
+from flasgger import Swagger, swag_from
 
 app = Flask(__name__)
+swagger = Swagger(app)
+
 api = Api(app)
-
-# Swagger UI setup
-SWAGGER_URL = '/api/docs'  # URL for exposing Swagger UI (make sure it's a trailing slash)
-API_URL = '/static/swagger.json'  # Our API url (can of course be a local resource)
-
-# Call factory function to create our blueprint
-swaggerui_blueprint = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={'app_name': "MyAPI"}
-)
-
-app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
 # In-memory data for books and borrowed books
 books = {}
@@ -28,6 +16,7 @@ SECRET_TOKEN = 'ye993our_s123ecre747489t_to948949ken'
 
 
 @app.route('/webhook/github', methods=['POST'])
+@swag_from('docs/webhook.yml')
 def handle_github_webhook():
     # Verify the request using the secret token
     signature = request.headers.get('X-Hub-Signature')
@@ -115,124 +104,6 @@ class ReturnBook(Resource):
 api.add_resource(Book, "/books", "/books/<string:book_id>")
 api.add_resource(Borrow, "/borrow")
 api.add_resource(ReturnBook, "/return")
-
-# Swagger JSON
-# @app.route('/swagger.json')
-# def swagger_json():
-#     """
-#     Swagger API Documentation.
-#     """
-#     swagger_docs = {
-#         "swagger": "2.0",
-#         "info": {
-#             "title": "Library Management API",
-#             "description": "API for managing books, borrowing, and returning",
-#             "version": "1.0"
-#         },
-#         "basePath": "/",
-#         "paths": {
-#             "/books": {
-#                 "get": {
-#                     "summary": "Retrieve all books",
-#                     "responses": {
-#                         "200": {"description": "A list of all books"}
-#                     }
-#                 },
-#                 "post": {
-#                     "summary": "Add a new book",
-#                     "parameters": [
-#                         {
-#                             "in": "body",
-#                             "name": "book",
-#                             "description": "Book to add",
-#                             "schema": {
-#                                 "type": "object",
-#                                 "properties": {
-#                                     "id": {"type": "string"},
-#                                     "title": {"type": "string"},
-#                                     "author": {"type": "string"}
-#                                 }
-#                             }
-#                         }
-#                     ],
-#                     "responses": {
-#                         "200": {"description": "Book added successfully"}
-#                     }
-#                 }
-#             },
-#             "/books/{book_id}": {
-#                 "get": {
-#                     "summary": "Retrieve a specific book by ID",
-#                     "parameters": [
-#                         {"name": "book_id", "in": "path", "type": "string"}
-#                     ],
-#                     "responses": {
-#                         "200": {"description": "Book details"},
-#                         "404": {"description": "Book not found"}
-#                     }
-#                 }
-#             },
-#             "/borrow": {
-#                 "post": {
-#                     "summary": "Borrow a book",
-#                     "parameters": [
-#                         {
-#                             "in": "body",
-#                             "name": "borrow",
-#                             "description": "Book to borrow",
-#                             "schema": {
-#                                 "type": "object",
-#                                 "properties": {
-#                                     "book_id": {"type": "string"},
-#                                     "user": {"type": "string"}
-#                                 }
-#                             }
-#                         }
-#                     ],
-#                     "responses": {
-#                         "200": {"description": "Book borrowed successfully"},
-#                         "400": {"description": "Book already borrowed"},
-#                         "404": {"description": "Book not found"}
-#                     }
-#                 }
-#             },
-#             "/return": {
-#                 "post": {
-#                     "summary": "Return a borrowed book",
-#                     "parameters": [
-#                         {
-#                             "in": "body",
-#                             "name": "return",
-#                             "description": "Book to return",
-#                             "schema": {
-#                                 "type": "object",
-#                                 "properties": {
-#                                     "book_id": {"type": "string"}
-#                                 }
-#                             }
-#                         }
-#                     ],
-#                     "responses": {
-#                         "200": {"description": "Book returned successfully"},
-#                         "404": {"description": "Book not borrowed"}
-#                     }
-#                 }
-#             }
-#         }
-#     }
-#     return jsonify(swagger_docs)
-
-
-def update_swagger_docs():
-    # Assuming you have a script to generate the swagger.json
-    # For example, you might use a tool like flasgger or swagger-codegen
-    # Here is a placeholder for the command you would run
-    command = "generate-swagger-docs"  # Replace with your actual command
-    result = subprocess.run(command, shell=True, check=True)
-    if result.returncode == 0:
-        print("API documentation updated successfully.")
-    else:
-        print("Failed to update API documentation.")
 
 if __name__ == "__main__":
     app.run(debug=True)
