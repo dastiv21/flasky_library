@@ -24,25 +24,26 @@ SECRET_TOKEN = 'ye993our_s123ecre747489t_to948949ken'
 
 
 @app.route('/webhook/github', methods=['POST'])
-def github_webhook():
-    # Verify the request signature
-    signature = 'sha1=' + hmac.new(SECRET_TOKEN.encode(), request.data,
-                                   hashlib.sha1).hexdigest()
-    # GitHub sends the signature in the header 'X-Hub-Signature'
-    request_signature = request.headers.get('X-Hub-Signature')
+def handle_github_webhook():
+    # Verify the request using the secret token
+    signature = request.headers.get('X-Hub-Signature')
+    sha, signature = signature.split('=')
+    mac = hmac.new(SECRET_TOKEN.encode(), msg=request.data,
+                   digestmod=hashlib.sha1)
 
-    if not hmac.compare_digest(signature, request_signature):
+    # Abort if the signature doesn't match
+    if not hmac.compare_digest(mac.hexdigest(), signature):
         abort(403)
 
     payload = request.json
-    # Check if the event is a push event
-    if payload.get('head_commit'):
+    event_type = request.headers.get('X-GitHub-Event')
+
+    if event_type == 'push':
         # Handle the push event
         print("Received a push event")
-        # Your logic for handling the push event goes here
-        # ...
+        # Your logic to handle the push event goes here
 
-    return '', 204
+    return '', 200
 
 class Book(Resource):
     def get(self, book_id=None):

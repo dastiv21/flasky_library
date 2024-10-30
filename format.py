@@ -4,32 +4,32 @@ import hashlib
 
 app = Flask(__name__)
 
-# Replace 'your_secret_token' with the secret token you configured on GitHub
-SECRET_TOKEN = 'your_secret_token'
+# The secret token you get from your GitHub webhook settings
+GITHUB_SECRET_TOKEN = 'your_secret_token_here'
 
-@app.route('/webhook/github', methods=['POST'])
-def github_webhook():
-    # Verify the request signature
+
+@app.route('/webhook', methods=['POST'])
+def handle_github_webhook():
+    # Verify the request using the secret token
     signature = request.headers.get('X-Hub-Signature')
-    if signature is None:
-        abort(400, 'Missing X-Hub-Signature header')
+    sha, signature = signature.split('=')
+    mac = hmac.new(GITHUB_SECRET_TOKEN.encode(), msg=request.data,
+                   digestmod=hashlib.sha1)
 
-    # Compute the HMAC hex digest
-    sha_name, signature = signature.split('=')
-    if sha_name != 'sha1':
-        abort(501, 'Not implemented: signature algorithm not supported')
-
-    mac = hmac.new(SECRET_TOKEN.encode(), msg=request.data, digestmod=hashlib.sha1)
+    # Abort if the signature doesn't match
     if not hmac.compare_digest(mac.hexdigest(), signature):
-        abort(403, 'Invalid signature')
+        abort(403)
 
-    # Process the GitHub event
     payload = request.json
-    if payload['ref'] == 'refs/heads/master':
-        # Implement your logic here for handling the push event
-        print('Received push to master branch')
+    event_type = request.headers.get('X-GitHub-Event')
 
-    return '', 204
+    if event_type == 'push':
+        # Handle the push event
+        print("Received a push event")
+        # Your logic to handle the push event goes here
+
+    return '', 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
