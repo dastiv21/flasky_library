@@ -4,32 +4,30 @@ import hashlib
 
 app = Flask(__name__)
 
-# The secret token you get from your GitHub webhook settings
-GITHUB_SECRET_TOKEN = 'your_secret_token_here'
+# Your GitHub webhook secret
+GITHUB_SECRET = b'your_secret_here'
 
-
-@app.route('/webhook', methods=['POST'])
-def handle_github_webhook():
-    # Verify the request using the secret token
+@app.route('/webhook/github', methods=['POST'])
+def github_webhook():
+    # Verify the request signature
     signature = request.headers.get('X-Hub-Signature')
-    sha, signature = signature.split('=')
-    mac = hmac.new(GITHUB_SECRET_TOKEN.encode(), msg=request.data,
-                   digestmod=hashlib.sha1)
-
-    # Abort if the signature doesn't match
+    sha_name, signature = signature.split('=')
+    if sha_name != 'sha1':
+        abort(400, 'Invalid header signature')
+    mac = hmac.new(GITHUB_SECRET, msg=request.data, digestmod=hashlib.sha1)
     if not hmac.compare_digest(mac.hexdigest(), signature):
-        abort(403)
+        abort(400, 'Invalid signature')
 
-    payload = request.json
-    event_type = request.headers.get('X-GitHub-Event')
+    # Process the GitHub event
+    event = request.headers.get('X-GitHub-Event', 'ping')
+    if event == 'push':
+        # Handle push event
+        print("Push event received")
+        # Add your logic here
+    else:
+        print(f"Unhandled event: {event}")
 
-    if event_type == 'push':
-        # Handle the push event
-        print("Received a push event")
-        # Your logic to handle the push event goes here
-
-    return '', 200
-
+    return '', 204
 
 if __name__ == '__main__':
     app.run(debug=True)
