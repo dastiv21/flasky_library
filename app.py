@@ -1,6 +1,8 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from flask_restful import Api, Resource
 from flask_swagger_ui import get_swaggerui_blueprint
+import hmac
+import hashlib
 
 app = Flask(__name__)
 api = Api(app)
@@ -18,6 +20,32 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 # In-memory data for books and borrowed books
 books = {}
 borrowed_books = {}
+SECRET_TOKEN = 'ye993our_s123ecre747489t_to948949ken'
+
+
+@app.route('/webhook/github', methods=['POST'])
+def github_webhook():
+    # Verify the request signature
+    signature = request.headers.get('X-Hub-Signature')
+    if signature is None:
+        abort(400, 'Missing X-Hub-Signature header')
+
+    # Compute the HMAC hex digest
+    sha_name, signature = signature.split('=')
+    if sha_name != 'sha1':
+        abort(501, 'Not implemented: signature algorithm not supported')
+
+    mac = hmac.new(SECRET_TOKEN.encode(), msg=request.data, digestmod=hashlib.sha1)
+    if not hmac.compare_digest(mac.hexdigest(), signature):
+        abort(403, 'Invalid signature')
+
+    # Process the GitHub event
+    payload = request.json
+    if payload['ref'] == 'refs/heads/master':
+        # Implement your logic here for handling the push event
+        print('Received push to master branch')
+
+    return '', 204
 
 class Book(Resource):
     def get(self, book_id=None):
