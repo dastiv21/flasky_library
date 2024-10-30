@@ -21,4 +21,4 @@ To install the software tool, follow these steps:
 
 Last updated: 2024-10-04:33:03
 
-Adding Turn 2 trigger.
+Adding MOdelC trigger
