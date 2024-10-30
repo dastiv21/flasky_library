@@ -26,25 +26,21 @@ SECRET_TOKEN = 'ye993our_s123ecre747489t_to948949ken'
 @app.route('/webhook/github', methods=['POST'])
 def github_webhook():
     # Verify the request signature
-    signature = request.headers.get('X-Hub-Signature')
-    print(signature)
-    if signature is None:
-        abort(400, 'Missing X-Hub-Signature header')
+    signature = 'sha1=' + hmac.new(SECRET_TOKEN.encode(), request.data,
+                                   hashlib.sha1).hexdigest()
+    # GitHub sends the signature in the header 'X-Hub-Signature'
+    request_signature = request.headers.get('X-Hub-Signature')
 
-    # Compute the HMAC hex digest
-    sha_name, signature = signature.split('=')
-    if sha_name != 'sha1':
-        abort(501, 'Not implemented: signature algorithm not supported')
+    if not hmac.compare_digest(signature, request_signature):
+        abort(403)
 
-    mac = hmac.new(SECRET_TOKEN.encode(), msg=request.data, digestmod=hashlib.sha1)
-    if not hmac.compare_digest(mac.hexdigest(), signature):
-        abort(403, 'Invalid signature')
-
-    # Process the GitHub event
     payload = request.json
-    if payload['ref'] == 'refs/heads/main':
-        # Implement your logic here for handling the push event
-        print('Received push to master branch')
+    # Check if the event is a push event
+    if payload.get('head_commit'):
+        # Handle the push event
+        print("Received a push event")
+        # Your logic for handling the push event goes here
+        # ...
 
     return '', 204
 
