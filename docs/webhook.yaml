@@ -1,0 +1,10 @@
+---
+  /webhook:
+    post:
+      summary: "Endpoint to handle GitHub webhook push events"
+      description: "Receives push events and regenerates API documentation."
+      responses:
+        200:
+          description: "Webhook event processed successfully"
+        403:
+          description: "Invalid signature"

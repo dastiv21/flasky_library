@@ -46,7 +46,7 @@ def handle_github_webhook():
         # Handle the push event
         print("Received a push event")
         # Update Swagger documentation
-        update_swagger_docs()
+        app.config['SWAGGER'] = {"update": True}
 
     return '', 200
 
