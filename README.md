@@ -21,4 +21,4 @@ To install the software tool, follow these steps:
 
 Last updated: 2024-10-04:33:03
 
-Adding Turn 1 trigger..
+Adding Turn 2 trigger
