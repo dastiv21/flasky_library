@@ -20,7 +20,7 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 # In-memory data for books and borrowed books
 books = {}
 borrowed_books = {}
-SECRET_TOKEN = 'ye993our_s123ecre747489t_to948949ken'
+SECRET_TOKEN = b'ye993our_s123ecre747489t_to948949ken'
 
 
 @app.route('/webhook/github', methods=['POST'])
