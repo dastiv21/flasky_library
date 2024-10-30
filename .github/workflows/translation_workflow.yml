@@ -1,0 +1,34 @@
+name: Translation Workflow
+
+on:
+  push:
+    paths:
+      - 'README.md'
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        pip install googletrans==3.1.0a0
+
+    - name: Translate README
+      run: |
+        python translate_readmes.py README.md 'es fr de yo zh-cn'
+
+    - name: Commit translated READMEs
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+        git add README_*.md
+        git commit -m "Update translated READMEs" || echo "No changes to commit"
+        git push

@@ -1,36 +1,33 @@
 from flask import Flask, request, jsonify
-from flasgger import Swagger, swag_from
+from flask_restx import Api, Resource, fields
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 
 app = Flask(__name__)
-swagger = Swagger(app)
+app.config['JWT_SECRET_KEY'] = 'your-secret-key'
+jwt = JWTManager(app)
+api = Api(app)
 
-GITHUB_SECRET_TOKEN = 'your_secret_token_here'
+login_model = api.model('Login', {
+    'username': fields.String(required=True),
+    'password': fields.String(required=True)
+})
 
+@api.route('/login')
+class Login(Resource):
+    @api.expect(login_model)
+    def post(self):
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        # Authenticate user...
+        access_token = create_access_token(identity=username)
+        return jsonify(access_token=access_token)
 
-@app.route('/webhook', methods=['POST'])
-@swag_from('docs/webhook.yml')  # Use the Swagger YAML file for documentation
-def handle_github_webhook():
-    # Verify the request using the secret token
-    signature = request.headers.get('X-Hub-Signature')
-    sha, signature = signature.split('=')
-    mac = hmac.new(GITHUB_SECRET_TOKEN.encode(), msg=request.data,
-                   digestmod=hashlib.sha1)
-
-    if not hmac.compare_digest(mac.hexdigest(), signature):
-        abort(403)
-
-    payload = request.json
-    event_type = request.headers.get('X-GitHub-Event')
-
-    if event_type == 'push':
-        # Handle the push event
-        print("Received a push event")
-        # Your logic to handle the push event goes here
-        # After handling the event, update the Swagger documentation
-        app.config['SWAGGER'] = {"update": True}
-
-    return jsonify({"status": "done"}), 200
-
+@api.route('/protected')
+class ProtectedResource(Resource):
+    @jwt_required()
+    def get(self):
+        return {'message': 'This is a protected endpoint'}
 
 if __name__ == '__main__':
     app.run(debug=True)

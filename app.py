@@ -1,22 +1,48 @@
 from flask import Flask, jsonify, request, abort
-from flask_restful import Api, Resource
+# from flask_restful import Api, Resource
 import hmac
 import hashlib
-from flasgger import Swagger, swag_from
+# from flasgger import Swagger, swag_from
+from flask_restx import Api, Resource
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+
 
 app = Flask(__name__)
-swagger = Swagger(app)
+api = Api(app, version='1.0', title='Library API', validate=True, doc='/documentation')
+app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # Change this!
+jwt = JWTManager(app)
 
-api = Api(app)
+@api.route('/login', methods=['POST'])
+class Login(Resource):
+    def post(self):
+        # You should implement a proper user authentication mechanism here
+        username = request.json.get('username', None)
+        password = request.json.get('password', None)
+        if username != 'admin' or password != 'password':
+            return {'message': 'Bad username or password'}, 401
+
+        access_token = create_access_token(identity=username)
+        return {'access_token': access_token}
+
+@api.route('/book', methods=['GET', 'POST'])
+class Book(Resource):
+    @jwt_required()
+    def get(self):
+        """Fetch a list of books"""
+        return {'message': 'List of books'}
+
+    @jwt_required()
+    def post(self):
+        """Add a new book"""
+        return {'message': 'Book added'}, 201
 
 # In-memory data for books and borrowed books
 books = {}
 borrowed_books = {}
 SECRET_TOKEN = 'ye993our_s123ecre747489t_to948949ken'
 
-
 @app.route('/webhook/github', methods=['POST'])
-@swag_from('docs/webhook.yml')
+# @swag_from('docs/webhook.yml')
 def handle_github_webhook():
     # Verify the request using the secret token
     signature = request.headers.get('X-Hub-Signature')
@@ -35,7 +61,7 @@ def handle_github_webhook():
         # Handle the push event
         print("Received a push event")
         # Update Swagger documentation
-        app.config['SWAGGER'] = {"update": True}
+        # app.config['SWAGGER'] = {"update": True}
 
     return '', 200
 
@@ -56,6 +82,7 @@ class Book(Resource):
             return jsonify({"message": "Book not found"}), 404
         return jsonify(list(books.values()))
 
+    @jwt_required()
     def post(self):
         """
         Add a new book.
@@ -99,6 +126,7 @@ class ReturnBook(Resource):
             return jsonify({"message": "Book not borrowed"}), 404
         borrowed_books.pop(book_id)
         return jsonify({"message": "Book returned successfully"})
+
 
 # Route setup
 api.add_resource(Book, "/books", "/books/<string:book_id>")
