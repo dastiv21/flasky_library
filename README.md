@@ -1,24 +1,39 @@
-# USAGE GUIDE
 
-Explain how to use the software, including examples and common tasks.
+## Project Summary
 
-Last updated: 2024-10-04:33:03
+**SmartLease**
 
-# SOFTWARE OVERVIEW
+*Revolutionizing land leasing with blockchain technology*
 
-This is the software overview
+### Purpose
 
-Last updated: 2024-10-04:33:03
+To provide a seamless platform for government-leased land management for residential and commercial use, ensuring transparency and efficiency.
 
-# INSTALLATION INSTRUCTIONS
+### Status
 
-To install the software tool, follow these steps:
+In Development
 
-1. Ensure you have Python installed on your system.
-2. Clone the repository using `git clone https://example.com/your-repo.git`.
-3. Navigate to the cloned repository's directory.
-4. Run `pip install .` to install the required dependencies.
+### Description
 
-Last updated: 2024-10-04:33:03
+A brief description of the project has not been provided.
 
-Adding MOdelC trigger 
+## Project Summary
+
+**Unnamed Project**
+
+*No tagline provided.*
+
+### Purpose
+
+The purpose of this project is not specified.
+
+### Status
+
+Unknown Status
+
+### Description
+
+A brief description of the project has not been provided.
+
+### Links
+
