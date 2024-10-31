@@ -19,6 +19,4 @@ The OpenAI Assistant uses advanced AI to interpret instructions and generate rel
 
 ### Links
 
-- [Installation](#installation)
-- [Contributing](#contributing)
-- [Usage](#usage)
+
