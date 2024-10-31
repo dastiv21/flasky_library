@@ -17,6 +17,5 @@ In Development
 
 The OpenAI Assistant uses advanced AI to interpret instructions and generate relevant content across various domains.
 
-### Links
-
+### Useful Links
 
